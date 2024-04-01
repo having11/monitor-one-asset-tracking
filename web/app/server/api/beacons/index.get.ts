@@ -3,5 +3,5 @@ import { getAllBeaconIds, getBeaconLocation, getListener } from "~/server/utils/
 export default defineEventHandler(async event => {
     const beaconIds = await getAllBeaconIds();
 
-    return await Promise.all(beaconIds.map(id => getBeaconLocation(id)));
+    return await Promise.all(beaconIds.map(async id => await getBeaconLocation(id)));
 });

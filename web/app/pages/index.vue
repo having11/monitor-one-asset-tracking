@@ -5,9 +5,14 @@ const route = useRoute();
 </script>
 
 <template>
-  <div>
-    <h1>Nuxt Routing set up successfully!</h1>
-    <p>Current route: {{ route.path }}</p>
+  <div id="map-container">
+    <h2>Map</h2>
     <Map />
   </div>
 </template>
+
+<style scoped>
+#map-container {
+    margin-top: 20px;
+}
+</style>

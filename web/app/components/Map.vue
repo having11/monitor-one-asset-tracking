@@ -1,5 +1,5 @@
 <template>
-    <div style="height:50vh; width:50vw">
+    <div style="height:75vh; width:80vw">
     <LMap
       ref="map"
       :zoom="zoom"
@@ -7,7 +7,6 @@
     >
       <LTileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> contributors"
         layer-type="base"
         name="OpenStreetMap"
       />
@@ -16,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-const zoom = ref(6)
+import { ref } from 'vue';
+const zoom = ref(6);
 </script>
 
 <style>

@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Listener } from '~/models/Beacon';
+import type { Listener } from '~/models/Listener';
 
 const { data, pending, error, refresh } = await useLazyAsyncData<Listener[]>('beacons',
     () => $fetch('/api/listeners', {

@@ -1,6 +1,7 @@
 import EventSource from 'eventsource';
+import saveNewLocation from '../utils/calcLocation';
 
-type BeaconDistDto = {
+export type BeaconDistDto = {
     source: number;
     beacon_minor: number;
     distance_m: number;
@@ -20,7 +21,8 @@ export default defineNitroPlugin(nitroApp => {
         const event = JSON.parse(evt.data);
         const dto = event.data as BeaconDistDto;
 
-        // await addBeaconDistanceEntry(dto.source, dto.beacon_minor, dto.distance_m);
+        await addBeaconDistanceEntry(dto.source, dto.beacon_minor, dto.distance_m);
+        await saveNewLocation(dto.beacon_minor);
     });
 
     events.onopen = evt => {

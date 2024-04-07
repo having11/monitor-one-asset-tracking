@@ -3,6 +3,10 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 
 export default defineNuxtConfig({
+  sourcemap: {
+    server: true,
+    client: true
+  },
   devtools: {
     enabled: true,
 

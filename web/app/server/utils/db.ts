@@ -98,6 +98,10 @@ export async function getLatestBeaconDistance(listenerId: number, beaconId: numb
   }
 
   const entryKey = `distance:beacon:${beaconId}:${listenerId}`;
+  
+  if ((await client.EXISTS(entryKey)) === 0) {
+    return undefined;
+  }
 
   const entry = await client.ts.GET(entryKey);
   if (!entry) {

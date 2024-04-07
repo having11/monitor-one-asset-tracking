@@ -13,10 +13,10 @@
     <LPolygon :lat-lngs="data && data.map(point => [point.latitude, point.longitude])"></LPolygon>
     <LMarker :key="point.id" v-for="point in data" :lat-lng="[point.latitude, point.longitude]">
       <LPopup>
-        Listener {{ point.id }}
+        Station {{ point.id }}
       </LPopup>
     </LMarker>
-    <LCircle :key="beacon.id" v-for="beacon in beacons" :lat-lng="beacon.location ? [beacon.location.latitude, beacon.location.longitude] : [0, 0]"
+    <LCircle :key="beacon.id" v-for="beacon in beaconData" :lat-lng="beacon.location ? [beacon.location.latitude, beacon.location.longitude] : [0, 0]"
     color="red"
     fill-color="red"
     :fill-opacity="0.5"
@@ -27,9 +27,21 @@
       </LPopup>
     </LCircle>
   </LMap>
-  <div>
-    {{ centerPoint }}
-  </div>
+  <v-container>
+    <v-row>
+        <v-col cols="4">
+            <div>
+                {{ centerPoint }}
+            </div>
+        </v-col>
+        <v-spacer></v-spacer>
+        <v-col cols="4">
+            <v-btn append-icon="mdi-refresh" variant="outlined" @click="beaconRefresh()">
+                Refresh
+            </v-btn>
+        </v-col>
+    </v-row>
+  </v-container>
 </div>
 </template>
 
@@ -62,8 +74,10 @@ const exampleBeacons = [
 const beacons = ref(exampleBeacons);
 
 import type { Listener } from '~/models/Listener';
+import type { Beacon } from '~/models/Beacon';
 
 const { data, pending, error, refresh } = await useLazyFetch<Listener[]>('/api/listeners');
+const { data: beaconData, pending: beaconPending, error: beaconError, refresh: beaconRefresh } = await useLazyFetch<Beacon[]>('/api/beacons');
 
 const getCentroid = (points: Listener[]): number[] => {
   let cXSum = 0;

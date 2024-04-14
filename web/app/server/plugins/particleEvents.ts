@@ -19,7 +19,7 @@ export default defineNitroPlugin(nitroApp => {
     events.addEventListener('BEACON-DIST', async evt => {
         console.log('Got Particle event', evt);
         const event = JSON.parse(evt.data);
-        const dto = event.data as BeaconDistDto;
+        const dto = JSON.parse(event.data) as BeaconDistDto;
 
         await addBeaconDistanceEntry(dto.source, dto.beacon_minor, dto.distance_m);
         await saveNewLocation(dto.beacon_minor);

@@ -16,7 +16,7 @@
         Station {{ point.id }}
       </LPopup>
     </LMarker>
-    <LCircle :key="beacon.id" v-for="beacon in beaconData" :lat-lng="beacon.location ? [beacon.location.latitude, beacon.location.longitude] : [0, 0]"
+    <LCircle v-if="beaconData" :key="beacon.id" v-for="beacon in beaconData" :lat-lng="beacon.location ? [beacon.location.latitude, beacon.location.longitude] : [0, 0]"
     color="red"
     fill-color="red"
     :fill-opacity="0.5"
@@ -25,7 +25,7 @@
       <LPopup>
         Beacon {{ beacon.id }}
       </LPopup>
-    </LCircle>
+    </LCircle> 
   </LMap>
   <v-container>
     <v-row>
@@ -98,6 +98,12 @@ watch(data, async (newData, oldData) => {
   if (newData) {
     centerPoint.value = getCentroid(newData);
   }
+});
+
+onMounted(() => {
+    const interval = setInterval(function() {
+   beaconRefresh();
+ }, 3000);
 });
 </script>
 

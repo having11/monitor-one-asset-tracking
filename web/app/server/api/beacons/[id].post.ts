@@ -1,5 +1,4 @@
 import { BeaconDistDto } from "~/server/plugins/particleEvents";
-import { getListener } from "~/server/utils/db";
 import saveNewLocation from '../../utils/calcLocation';
 
 export default defineEventHandler(async event => {

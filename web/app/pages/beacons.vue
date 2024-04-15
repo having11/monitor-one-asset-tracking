@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 import type { Beacon } from '~/models/Beacon';
-import type { Coords } from '~/models/Coords';
 
 const { data, pending, error, refresh } = await useLazyAsyncData<Beacon[]>('beacons',
     () => $fetch('/api/beacons', {
@@ -29,16 +28,10 @@ const headers = [
         key: 'id'
     },
     {
-        title: 'Latest distance',
-        align: 'start',
-        key: 'latestDistance',
-        value: (item: number) => `${item}m`
-    },
-    {
         title: 'Location',
-        align: 'start',
+        align: 'end',
         key: 'location',
-        value: (item: Coords) => `${item.latitude}, ${item.longitude}`,
+        value: (item: Beacon) => `${item.location?.latitude}, ${item.location?.longitude}`,
     },
 ];
 </script>

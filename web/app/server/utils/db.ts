@@ -234,7 +234,6 @@ export async function getCurrentInventoryForItem(itemId: number): Promise<ItemIn
   return result.rows.map(val => itemInventoryMap(val))[0];
 }
 
-// TODO: Create a new inventory event for a single item by ID
 export async function createItemScan(itemId: number, event: InventoryEvent): Promise<InventoryEvent> {
   const result = await postgresClient.query<schema_inventory_event>(`INSERT INTO inventory_event(
     "timestamp", quantity_change, item_id, scanner_id)

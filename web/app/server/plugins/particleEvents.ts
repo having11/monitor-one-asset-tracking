@@ -13,7 +13,7 @@ export default defineNitroPlugin(nitroApp => {
     const events = new EventSource(url);
 
     events.onerror = err => {
-        console.log('Got error', err);
+        // console.log('Got error', err);
     }
 
     events.addEventListener('BEACON-DIST', async evt => {

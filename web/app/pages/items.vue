@@ -1,5 +1,5 @@
 <template>
     <div>
-        Here are your events:
+        Here are your items:
     </div>
 </template>

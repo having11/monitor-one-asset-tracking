@@ -3,6 +3,12 @@ import { createClient } from "redis";
 import pg from 'pg';
 import type { Coords } from "~/models/Coords";
 import type { Beacon } from "~/models/Beacon";
+import { schema_inventory_event, schema_item, schema_scanner, schema_vw_item_inventory, schema_vw_latest_scan } from "~/models/db_schema";
+import { Scanner } from "~/models/Scanner";
+import { Item } from "~/models/Item";
+import { InventoryEvent, inventoryEventMap } from "~/models/InventoryEvent";
+import { LatestScan, latestScanMap } from "~/models/LatestScan";
+import { ItemInventory, itemInventoryMap } from "~/models/ItemInventory";
 
 export type BeaconDistanceEntry = {
   listenerId: number;
@@ -164,4 +170,77 @@ export async function updateBeaconLocation(id: number, location: Coords): Promis
   }
 
   return updatedLocation;
+}
+
+export async function getAllScanners(): Promise<Scanner[]> {
+  const result = await postgresClient.query<schema_scanner>(`SELECT * FROM scanner`);
+
+  return result.rows;
+}
+
+export async function createScanner(scanner: Scanner): Promise<Scanner> {
+  const result = await postgresClient.query<schema_scanner>(`INSERT INTO scanner(
+    name, description, latitude, longitude
+    )
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+  )`, [scanner.name, scanner.description, scanner.latitude, scanner.longitude]);
+
+  return result.rows[0];
+}
+
+export async function getAllItems(): Promise<Item[]> {
+  const result = await postgresClient.query<schema_item>(`SELECT * FROM item`);
+
+  return result.rows;
+}
+
+export async function getItemById(itemId: number): Promise<Item> {
+  const result = await postgresClient.query<schema_item>(`SELECT * FROM item
+    WHERE id = $1`, [itemId]);
+
+  return result.rows[0];
+}
+
+export async function createItem(item: Item): Promise<Item> {
+  const result = await postgresClient.query<schema_item>(`INSERT INTO item(
+    name, description
+    )
+    VALUES ($1, $2)
+    RETURNING *
+  )`, [item.name, item.description]);
+
+  return result.rows[0];
+}
+
+export async function getScansForItem(itemId: number): Promise<InventoryEvent[]> {
+  const result = await postgresClient.query<schema_inventory_event>(`SELECT * FROM inventory_event
+    WHERE item_id = $1 ORDER BY "timestamp" DESC`, [itemId]);
+
+  return result.rows.map(val => inventoryEventMap(val));
+}
+
+export async function getLatestScanForItem(itemId: number): Promise<LatestScan> {
+  const result = await postgresClient.query<schema_vw_latest_scan>(`SELECT * FROM vw.latest_scan
+    WHERE item_id = $1`, [itemId]);
+  
+  return result.rows.map(val => latestScanMap(val))[0];
+}
+
+export async function getCurrentInventoryForItem(itemId: number): Promise<ItemInventory> {
+  const result = await postgresClient.query<schema_vw_item_inventory>(`SELECT * FROM vw.item_inventory
+    WHERE item_id = $1`, [itemId]);
+  
+  return result.rows.map(val => itemInventoryMap(val))[0];
+}
+
+// TODO: Create a new inventory event for a single item by ID
+export async function createItemScan(itemId: number, event: InventoryEvent): Promise<InventoryEvent> {
+  const result = await postgresClient.query<schema_inventory_event>(`INSERT INTO inventory_event(
+    "timestamp", quantity_change, item_id, scanner_id)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *
+  )`, [event.timestamp, event.quantityChange, itemId, event.scannerId]);
+
+  return result.rows.map(val => inventoryEventMap(val))[0];
 }

@@ -30,6 +30,9 @@
         <v-divider></v-divider>
         <v-list-item prepend-icon="mdi-view-list-outline" title="Items" value="items" :to="'/items'">
         </v-list-item>
+        <v-divider></v-divider>
+        <v-list-item prepend-icon="mdi-nfc-variant" title="RFID Scanners" value="scanners" :to="'/scanners'">
+        </v-list-item>
         </v-list>
     </v-navigation-drawer>
 </v-card>

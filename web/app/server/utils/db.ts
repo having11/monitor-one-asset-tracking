@@ -221,14 +221,20 @@ export async function getScansForItem(itemId: number): Promise<InventoryEvent[]>
 }
 
 export async function getLatestScanForItem(itemId: number): Promise<LatestScan> {
-  const result = await postgresClient.query<schema_vw_latest_scan>(`SELECT * FROM vw.latest_scan
+  const result = await postgresClient.query<schema_vw_latest_scan>(`SELECT * FROM "vw.latest_scan"
     WHERE item_id = $1`, [itemId]);
   
   return result.rows.map(val => latestScanMap(val))[0];
 }
 
+export async function getCurrentInventoryForAllItems(): Promise<ItemInventory[]> {
+  const result = await postgresClient.query<schema_vw_item_inventory>(`SELECT * FROM "vw.item_inventory"`);
+  
+  return result.rows.map(val => itemInventoryMap(val));
+}
+
 export async function getCurrentInventoryForItem(itemId: number): Promise<ItemInventory> {
-  const result = await postgresClient.query<schema_vw_item_inventory>(`SELECT * FROM vw.item_inventory
+  const result = await postgresClient.query<schema_vw_item_inventory>(`SELECT * FROM "vw.item_inventory"
     WHERE item_id = $1`, [itemId]);
   
   return result.rows.map(val => itemInventoryMap(val))[0];

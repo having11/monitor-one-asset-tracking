@@ -9,7 +9,10 @@
 
 #include <SPI.h>
 #include <BeaconScanner.h>
+#include <LiquidCrystal_I2C.h>
 
+#include "Constants.h"
+#include "ScanFSM.h"
 #include "TagScanner.h"
 
 // Let Device OS manage the connection to the Particle Cloud
@@ -21,11 +24,16 @@ SYSTEM_THREAD(ENABLED);
 // Show system, cloud connectivity, and application logs over USB
 // View logs with CLI using 'particle serial monitor --follow'
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
+TagScanner tagScanner{&SPI, Pins::RC522Rst, Pins::RC522Cs};
+LiquidCrystal_I2C lcd{LCDConstants::I2CAddress};
+ScanFSM fsm{tagScanner, lcd};
 
 void scanCb(Beacon& beacon, callback_type type);
 double rssiToDistance(int8_t rssi, int txPower);
+void getBeacons(void);
 
 static char jsonBuf[512];
+static uint32_t lastBeaconScan = 0;
 
 // Changes for each listener
 constexpr int ListenerId = 1;
@@ -34,15 +42,32 @@ void setup() {
   delay(1000);
 
   SPI.begin();
+  Wire.begin();
+
+  pinMode(Pins::BtnLeft, INPUT_PULLUP);
+  pinMode(Pins::BtnMiddle, INPUT_PULLUP);
+  pinMode(Pins::BtnRight, INPUT_PULLUP);
 
   BLE.on();
   Scanner.setCallback(scanCb);
   Scanner.startContinuous(SCAN_IBEACON);
+
+  tagScanner.init();
+  lcd.begin(LCDConstants::ColumnCount, LCDConstants::RowCount);
 }
 
 void loop() {
   Scanner.loop();
 
+  fsm.update();
+  
+  if (millis() - lastBeaconScan >= BeaconScanDelayMs) {
+    getBeacons();
+    lastBeaconScan = millis();
+  }
+}
+
+void getBeacons() {
   for (auto& ibeacon : Scanner.getiBeacons()) {
     Log.info("Found iBeacon with UUID=%s, RSSI=%d, power=%d, major=%d, minor=%d",
         ibeacon.getUuid(), ibeacon.getRssi(), ibeacon.getPower(), ibeacon.getMajor(), ibeacon.getMinor());
@@ -58,8 +83,6 @@ void loop() {
     writer.endObject();
     Particle.publish("BEACON-DIST", jsonBuf);
   }
-
-  delay(5000);
 }
 
 void scanCb(Beacon& beacon, callback_type type) {

@@ -2,10 +2,11 @@
 
 TagScanner::TagScanner(SPIClass* spi, uint8_t rstPin, uint8_t csPin)
   : _rstPin{rstPin}, _csPin{csPin} {
-  _reader = std::make_unique<MFRC522>(_csPin, _rstPin, spi);
+  _reader = std::make_unique<MFRC522>(_csPin, _rstPin);
 }
 
 void TagScanner::init() {
+  _reader->setSPIConfig();
   _reader->PCD_Init();
 }
 
@@ -32,7 +33,7 @@ std::optional<int16_t> TagScanner::getCardId() {
   byte buf[18];
   byte size = sizeof(buf);
 
-  MFRC522::StatusCode status = _reader->MIFARE_Read(4, buf, &size);
+  MFRC522::StatusCode status = (MFRC522::StatusCode)_reader->MIFARE_Read(4, buf, &size);
   Serial.printf("Scanned card with status=%d", static_cast<int>(status));
 
   if (status == MFRC522::StatusCode::STATUS_OK) {
@@ -52,7 +53,7 @@ std::optional<bool> TagScanner::writeCardId(int16_t id) {
   byte buf[4];
   memcpy(buf, &id, sizeof(id));
 
-  MFRC522::StatusCode status = _reader->MIFARE_Ultralight_Write(4, buf, sizeof(buf));
+  MFRC522::StatusCode status = (MFRC522::StatusCode)_reader->MIFARE_Ultralight_Write(4, buf, sizeof(buf));
 
   if (status == MFRC522::StatusCode::STATUS_OK) {
     Serial.println("Successfully wrote new ID to card");

@@ -4,6 +4,8 @@
  * Date: 
  */
 
+// #define TEST_MODE
+
 // Include Particle Device OS APIs
 #include "Particle.h"
 
@@ -24,7 +26,10 @@ SYSTEM_THREAD(ENABLED);
 // Show system, cloud connectivity, and application logs over USB
 // View logs with CLI using 'particle serial monitor --follow'
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
-TagScanner tagScanner{&SPI, Pins::RC522Rst, Pins::RC522Cs};
+
+#ifndef TEST_MODE
+
+TagScanner tagScanner{&SPI1, Pins::RC522Rst, Pins::RC522Cs};
 LiquidCrystal_I2C lcd{LCDConstants::I2CAddress};
 ScanFSM fsm{tagScanner, lcd};
 
@@ -39,25 +44,38 @@ static uint32_t lastBeaconScan = 0;
 constexpr int ListenerId = 1;
 
 void setup() {
-  delay(1000);
-
+  delay(4000);
   SPI.begin();
-  Wire.begin();
 
   pinMode(Pins::BtnLeft, INPUT_PULLUP);
   pinMode(Pins::BtnMiddle, INPUT_PULLUP);
   pinMode(Pins::BtnRight, INPUT_PULLUP);
 
-  BLE.on();
-  Scanner.setCallback(scanCb);
-  Scanner.startContinuous(SCAN_IBEACON);
+  // BLE.on();
+  // Scanner.setCallback(scanCb);
+  // Scanner.startContinuous(SCAN_IBEACON);
 
   tagScanner.init();
   // lcd.begin(LCDConstants::ColumnCount, LCDConstants::RowCount);
 }
 
 void loop() {
-  Scanner.loop();
+  // Scanner.loop();
+
+  if (!digitalRead(Pins::BtnLeft)) {
+    auto writeResult = tagScanner.writeCardId(TagIdToWrite);
+    if (writeResult) {
+      if (writeResult.value()) {
+        Log.info("Wrote new ID to tag!");
+      } else {
+        Log.info("Failed to write new ID to tag!");
+      }
+    } else {
+      Log.info("Unable to find tag for writing");
+    }
+
+    delay(1000);
+  }
 
   auto scannedId = tagScanner.getCardId();
   if (scannedId) {
@@ -134,3 +152,36 @@ double rssiToDistance(int8_t rssi, int txPower) {
   */
   return pow(10, ((double) (txPower - rssi - (-6))) / (10 * 2));
 }
+#else
+
+#include <SPI.h>
+#include <MFRC522.h>
+
+constexpr uint8_t RST_PIN = D2;          // Configurable, see typical pin layout above
+constexpr uint8_t SS_PIN = A2;         // Configurable, see typical pin layout above
+
+MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
+
+void setup() {
+  delay(4000);
+	SPI.begin();			// Init SPI bus
+  mfrc522.setSPIConfig();
+	mfrc522.PCD_Init();		// Init MFRC522
+}
+
+void loop() {
+	// Look for new cards
+	if ( ! mfrc522.PICC_IsNewCardPresent()) {
+		return;
+	}
+
+	// Select one of the cards
+	if ( ! mfrc522.PICC_ReadCardSerial()) {
+		return;
+	}
+
+	// Dump debug info about the card; PICC_HaltA() is automatically called
+	mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+}
+
+#endif

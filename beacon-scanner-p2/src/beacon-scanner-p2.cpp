@@ -53,13 +53,32 @@ void setup() {
   Scanner.startContinuous(SCAN_IBEACON);
 
   tagScanner.init();
-  lcd.begin(LCDConstants::ColumnCount, LCDConstants::RowCount);
+  // lcd.begin(LCDConstants::ColumnCount, LCDConstants::RowCount);
 }
 
 void loop() {
   Scanner.loop();
 
-  fsm.update();
+  auto scannedId = tagScanner.getCardId();
+  if (scannedId) {
+    Log.info("Found tag with ID=%d", scannedId.value());
+    time_t time = Time.now();
+  
+    memset(jsonBuf, 0, sizeof(jsonBuf));
+    JSONBufferWriter writer(jsonBuf, sizeof(jsonBuf));
+    writer.beginObject();
+    writer.name("scannerId").value(ScannerId);
+    writer.name("quantityChange").value(QuantityChange);
+    writer.name("itemId").value(scannedId.value());
+    writer.name("id").value(0);
+    writer.name("timestamp").value(Time.format(time, TIME_FORMAT_ISO8601_FULL));
+    writer.endObject();
+    Particle.publish("INVENTORY-SCAN", jsonBuf);
+
+    delay(1000);
+  }
+
+  // fsm.update();
   
   if (millis() - lastBeaconScan >= BeaconScanDelayMs) {
     getBeacons();

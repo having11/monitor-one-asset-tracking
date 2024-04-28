@@ -12,12 +12,13 @@ namespace Pins {
 
 // Scanner ID
 constexpr uint8_t ScannerId = 1;
+constexpr int8_t QuantityChange = 1;
 
 constexpr uint32_t BeaconScanDelayMs = 5000;
 
 // LCD
 namespace LCDConstants {
-  constexpr uint8_t I2CAddress = 0x27;
+  constexpr uint8_t I2CAddress = 0x20;
   constexpr uint8_t ColumnCount = 20;
   constexpr uint8_t RowCount = 4;
 }

@@ -244,8 +244,7 @@ export async function createItemScan(itemId: number, event: InventoryEvent): Pro
   const result = await postgresClient.query<schema_inventory_event>(`INSERT INTO inventory_event(
     "timestamp", quantity_change, item_id, scanner_id)
     VALUES ($1, $2, $3, $4)
-    RETURNING *
-  )`, [event.timestamp, event.quantityChange, itemId, event.scannerId]);
+    RETURNING *`, [event.timestamp, event.quantityChange, itemId, event.scannerId]);
 
   return result.rows.map(val => inventoryEventMap(val))[0];
 }

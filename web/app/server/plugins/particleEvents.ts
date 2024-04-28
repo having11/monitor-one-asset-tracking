@@ -10,11 +10,17 @@ export type BeaconDistDto = {
 
 export default defineNitroPlugin(nitroApp => {
     const url = `https://api.particle.io/v1/events/BEACON?access_token=${process.env.PARTICLE_API_TOKEN}`;
+    const scanUrl = `https://api.particle.io/v1/events/INVENTORY-SCAN?access_token=${process.env.PARTICLE_API_TOKEN}`;
 
     const events = new EventSource(url);
+    const scanEvents = new EventSource(scanUrl);
 
     events.onerror = err => {
-        // console.log('Got error', err);
+      console.log('Got beacon error', err);
+    }
+
+    scanEvents.onerror = err => {
+      console.log('Got scan error', err);
     }
 
     events.addEventListener('BEACON-DIST', async evt => {
@@ -26,7 +32,7 @@ export default defineNitroPlugin(nitroApp => {
         await saveNewLocation(dto.beacon_minor);
     });
 
-    events.addEventListener('INVENTORY-SCAN', async evt => {
+    scanEvents.addEventListener('INVENTORY-SCAN', async evt => {
         console.log('Got Inventory Particle event', evt);
         const event = JSON.parse(evt.data);
         const dto = JSON.parse(event.data) as InventoryEvent;
@@ -35,6 +41,10 @@ export default defineNitroPlugin(nitroApp => {
     });
 
     events.onopen = evt => {
-        console.log('opened connection');
+        console.log('opened beacon connection');
+    }
+
+    scanEvents.onopen = evt => {
+      console.log('opened scan connection');
     }
 });

@@ -51,9 +51,9 @@ void setup() {
   pinMode(Pins::BtnMiddle, INPUT_PULLUP);
   pinMode(Pins::BtnRight, INPUT_PULLUP);
 
-  // BLE.on();
-  // Scanner.setCallback(scanCb);
-  // Scanner.startContinuous(SCAN_IBEACON);
+  BLE.on();
+  Scanner.setCallback(scanCb);
+  Scanner.startContinuous(SCAN_IBEACON);
 
   tagScanner.init();
   // lcd.begin(LCDConstants::ColumnCount, LCDConstants::RowCount);
